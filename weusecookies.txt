@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🍪 We Use Cookies 🍪 — The Cookie Network</title>
+<style>
+:root{
+  --bg:#0f0f10; --panel:#0b0b0c; --card:#141416; --muted:#bfbfbf;
+  --text:#ffcc00; --accent:#ffcc00; --accent-strong:#ffaa00; --danger:#d64545; --success:#28a745;
+  --input-bg:#0b0b0b; --input-border:#ffb700; --input-color:#ffcc00; --heartbeat-duration:2.5s;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Segoe UI, Roboto, system-ui;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;width:100vw}
+body.login-gradient::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at center, rgba(80,80,80,0.18) 0%, rgba(0,0,0,0.6) 45%, rgba(0,0,0,0.95) 100%);pointer-events:none;z-index:0;}
+header{display:flex;align-items:center;padding:12px 18px;background:var(--panel);position:relative;z-index:20}
+.header-left{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.title{font-weight:800;font-size:18px;color:var(--accent)}
+.subtitle{font-size:12px;color:var(--muted)}
+.controls{position:absolute;right:12px;top:10px;display:flex;gap:8px;align-items:center}
+.icon-btn{background:transparent;border:0;color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:700}
+.settings-dropdown{position:absolute;right:12px;top:54px;min-width:280px;background:rgba(14,14,14,0.98);color:var(--accent);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.6);padding:12px;display:none;z-index:1200}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0}
+.settings-row label{color:var(--text);font-weight:600}
+.main{display:flex;flex:1;padding:14px;align-items:flex-start;justify-content:center;gap:18px;overflow:hidden;position:relative;z-index:10}
+.container{width:100%;max-width:1200px}
+.top-tabs{display:flex;gap:8px;justify-content:center;margin:8px 0}
+.tab-btn{background:transparent;color:var(--text);border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+.tab-btn:hover{background:rgba(255,170,0,0.06)}
+.tab-btn.active{background:var(--accent);color:#111}
+.panel{background:var(--panel);border-radius:12px;padding:18px;width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.6);overflow:auto;max-height:calc(100vh - 180px)}
+.center{display:flex;justify-content:center;align-items:center}
+.login-card{ background:var(--card); padding:22px; border-radius:12px; text-align:center; width:420px; border:1px solid rgba(255,204,0,0.06); box-shadow: 0 0 8px rgba(255,204,0,0.08); animation:pulseGlow var(--heartbeat-duration) ease-in-out infinite; transition: box-shadow 1s ease; }
+@keyframes pulseGlow{0%{box-shadow:0 0 8px rgba(255,204,0,0.06)}50%{box-shadow:0 0 32px rgba(255,204,0,0.45)}100%{box-shadow:0 0 8px rgba(255,204,0,0.06)}}
+input[type="text"],input[type="password"],input[type="file"],select,textarea{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--input-color);box-shadow:0 0 8px rgba(255,204,0,0.06);outline:none;transition:box-shadow .18s,border-color .18s}
+input::placeholder{color:rgba(255,204,0,0.5)}
+button.primary{background:var(--accent);color:#111;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800}
+button.primary:hover{background:var(--accent-strong)}
+#preview{width:100%;max-height:360px;border-radius:8px;background:#000}
+#videoGallery{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;max-height:360px;overflow:auto;padding:8px}
+.videoItem,.audioItem,.mp4Item,.fileItem{background:rgba(0,0,0,0.05);padding:10px;border-radius:8px;width:260px;display:flex;flex-direction:column;gap:8px}
+.videoItem video,.mp4Item video{width:100%;border-radius:6px}
+.audioItem audio{width:100%}
+#fileList,#mp3List,#mp4List{max-height:320px;overflow:auto;padding-top:8px;display:flex;flex-direction:column;gap:8px}
+.progressWrap{height:8px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden;margin-top:8px}
+.progressBar{height:100%;width:0%;background:var(--accent);transition:width .12s linear}
+.spinnerOverlay{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(10,10,10,0.9);padding:16px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.7);z-index:2000;display:flex;align-items:center;gap:12px;color:var(--accent)}
+.spinner{width:28px;height:28px;border-radius:50%;border:4px solid rgba(255,255,255,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column-reverse;gap:10px;z-index:9999;align-items:flex-end}
+.toast{background:rgba(40,40,40,0.98);color:var(--text);padding:10px 12px;border-radius:10px;min-width:220px;box-shadow:0 8px 30px rgba(0,0,0,0.6);opacity:0;transform:translateY(18px);animation: toastIn .45s ease forwards}
+@keyframes toastIn{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+.toast-out{animation: toastOut 600ms ease forwards}
+@keyframes toastOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(18px)}}
+.toast .close-x{font-weight:800;opacity:0.6;margin-left:8px;border-radius:6px;padding:4px;cursor:pointer;background:transparent;color:var(--muted);border:0}
+.toast .close-x:hover{opacity:1;color:var(--accent);transform:scale(1.05)}
+.del-btn{width:38px;height:38px;border-radius:50%;background:var(--danger);color:#fff;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;box-shadow:0 4px 8px rgba(0,0,0,0.4)}
+.del-btn:hover{background:#ff5a5a;transform:translateY(-1px)}
+@media (max-width:900px){.panel{width:96%}.login-card{width:92%}}
+::-webkit-scrollbar{height:10px;width:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:8px}
+</style>
+</head>
+<body id="bodyRoot">
+<div class="app" id="appRoot" data-theme="dark">
+  <header>
+    <div class="header-left">
+      <div class="title">🍪 We Use Cookies 🍪 — The Cookie Network</div>
+      <div class="subtitle" id="welcomeLine" style="display:none">Welcome, <span id="welcomeName"></span></div>
+    </div>
+
+    <div class="controls">
+      <button id="soundToggle" class="icon-btn" title="Toggle sound">🔔</button>
+      <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+      <button id="logoutBtn" class="icon-btn" title="Logout" style="display:none">Logout</button>
+    </div>
+
+    <div id="settingsDropdown" class="settings-dropdown" aria-hidden="true">
+      <h4 style="margin:0 0 8px 0;color:var(--accent)">Settings</h4>
+      <div class="settings-row"><label for="themeSelect">Theme</label><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+      <div class="settings-row"><label for="chunkSelect">Chunk Size</label><select id="chunkSelect"><option value="262144">256 KB</option><option value="1048576">1 MB</option><option value="5242880">5 MB</option><option value="10485760">10 MB</option></select></div>
+      <div class="settings-row"><label for="soundSelect">Sound</label><select id="soundSelect"><option value="on">On</option><option value="off">Off</option></select></div>
+      <div style="text-align:right;margin-top:8px"><button id="settingsClose" class="tab-btn" style="background:transparent;color:var(--accent)">Done</button></div>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="container">
+      <!-- LOGIN PANEL -->
+      <div id="loginPanel" class="center" style="height:calc(100vh - 120px)">
+        <div class="login-card" id="loginCard">
+          <h2 style="color:var(--accent);margin:0 0 6px 0">🍪 We Use Cookies 🍪</h2>
+          <h3 style="color:var(--accent);font-weight:400;margin:0 0 12px 0">— The Cookie Network —</h3>
+          <input id="loginUsername" type="text" placeholder="Username" autocomplete="username" />
+          <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+          <button id="loginBtn" class="primary" style="margin-top:12px" type="button">Login</button>
+        </div>
+      </div>
+
+      <!-- APP PANEL -->
+      <div id="appPanel" style="display:none">
+        <div class="top-tabs">
+          <button id="tabVideo" class="tab-btn active">🎥 Video</button>
+          <button id="tabFiles" class="tab-btn">📁 Files</button>
+          <button id="tabChat" class="tab-btn">💬 Chat</button>
+          <button id="tabMP3" class="tab-btn">🎵 MP3</button>
+          <button id="tabMP4" class="tab-btn">🎬 MP4</button>
+          <button id="tabGames" class="tab-btn">🎮 Games</button>
+        </div>
+
+        <!-- Video -->
+        <div id="panelVideo" class="panel" style="display:block">
+          <h3 style="color:var(--accent);margin-top:0">🎥 Record / Post</h3>
+          <video id="preview" autoplay muted playsinline></video>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button id="startRec" class="primary">Start</button>
+            <button id="stopRec" class="primary" disabled>Stop</button>
+            <button id="postRec" class="primary" disabled>Post</button>
+          </div>
+          <p style="color:var(--muted);margin-top:10px;font-size:13px">Recorded videos are saved locally for demo use.</p>
+          <h4 style="color:var(--accent);margin-top:18px">Community Videos</h4>
+          <div id="videoGallery"></div>
+        </div>
+
+        <!-- Files -->
+        <div id="panelFiles" class="panel" style="display:none">
+          <h3 style="color:var(--accent);margin-top:0">📁 Upload / Download</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="fileInput" type="file" />
+            <input id="fileRecipient" type="text" placeholder='Type username (e.g. Admin) or "Public"' style="width:320px" />
+          </div>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+            <button id="fileUploadBtn" class="primary">Upload File</button>
+            <button id="filePauseBtn" class="tab-btn" style="display:none">⏸️ Pause</button>
+            <button id="fileResumeBtn" class="tab-btn" style="display:none">▶️ Resume</button>
+            <button id="fileCancelBtn" class="tab-btn" style="display:none">✖️ Cancel</button>
+            <div class="progressWrap" style="flex:1;max-width:360px"><div id="fileProgress" class="progressBar" style="width:0%"></div></div>
+            <div id="filePercent" style="min-width:48px;text-align:right;color:var(--muted);font-size:13px"></div>
+          </div>
+          <h4 style="color:var(--accent);margin-top:16px">Available Files</h4>
+          <div id="fileList"></div>
+        </div>
+
+        <!-- Chat -->
+        <div id="panelChat" class="panel" style="display:none">
+          <h3 style="color:var(--accent);margin-top:0">💬 Chat Room</h3>
+          <div id="chatBox"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <input id="chatInput" type="text" placeholder="Type your message..." />
+            <button id="chatSendBtn" class="primary" style="width:120px">Send</button>
+          </div>
+        </div>
+
+        <!-- MP3 -->
+        <div id="panelMP3" class="panel" style="display:none">
+          <h3 style="color:var(--accent);margin-top:0">🎵 MP3 Upload / Play (local)</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="mp3Input" type="file" accept="audio/*" />
+            <input id="mp3Recipient" type="text" placeholder='Type username or "Public"' style="width:240px" />
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <button id="mp3UploadBtn" class="primary">Upload MP3</button>
+            <button id="mp3PauseBtn" class="tab-btn" style="display:none">⏸️ Pause</button>
+            <button id="mp3ResumeBtn" class="tab-btn" style="display:none">▶️ Resume</button>
+            <button id="mp3CancelBtn" class="tab-btn" style="display:none">✖️ Cancel</button>
+            <div class="progressWrap" style="flex:1;max-width:360px"><div id="mp3Progress" class="progressBar" style="width:0%"></div></div>
+            <div id="mp3Percent" style="min-width:48px;text-align:right;color:var(--muted);font-size:13px"></div>
+          </div>
+          <h4 style="color:var(--accent);margin-top:14px">MP3 Files</h4>
+          <div id="mp3List"></div>
+        </div>
+
+        <!-- MP4 -->
+        <div id="panelMP4" class="panel" style="display:none">
+          <h3 style="color:var(--accent);margin-top:0">🎬 MP4 Upload / Play (local)</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="mp4Input" type="file" accept="video/*" />
+            <input id="mp4Recipient" type="text" placeholder='Type username or "Public"' style="width:240px" />
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <button id="mp4UploadBtn" class="primary">Upload MP4</button>
+            <button id="mp4PauseBtn" class="tab-btn" style="display:none">⏸️ Pause</button>
+            <button id="mp4ResumeBtn" class="tab-btn" style="display:none">▶️ Resume</button>
+            <button id="mp4CancelBtn" class="tab-btn" style="display:none">✖️ Cancel</button>
+            <div class="progressWrap" style="flex:1;max-width:360px"><div id="mp4Progress" class="progressBar" style="width:0%"></div></div>
+            <div id="mp4Percent" style="min-width:48px;text-align:right;color:var(--muted);font-size:13px"></div>
+          </div>
+          <h4 style="color:var(--accent);margin-top:14px">MP4 Files</h4>
+          <div id="mp4List"></div>
+        </div>
+
+        <!-- Games -->
+        <div id="panelGames" class="panel" style="display:none">
+          <h3 style="color:var(--accent);margin-top:0">🎮 Games</h3>
+          <p style="color:var(--muted)">Games coming soon — placeholder area.</p>
+          <button id="gamesTestBtn" class="tab-btn">Play test animation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- spinner & toasts -->
+<div id="spinnerOverlay" class="spinnerOverlay" style="display:none">
+  <div class="spinner"></div>
+  <div id="spinnerText" style="font-weight:700;color:var(--accent)">Processing…</div>
+</div>
+
+<div id="toasts"></div>
+<audio id="fallbackDing" preload="auto" src="data:audio/wav;base64,UklGRkQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA="></audio>
+
+<script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
+  /* === users === */
+  const USERS = {
+    "darcy.drake30@uk.oneschoolglobal.com":"ILOVECOOKIES",
+    "fletcher.anderson30@uk.oneschoolglobal.com":"COOKIESILOVE",
+    "Admin":"COOKIEPREFERENCES"
+  };
+
+  const $ = id => document.getElementById(id);
+  function genId(p='id'){ return p + '_' + Math.random().toString(36).slice(2,9); }
+  function currentUser(){ return localStorage.getItem('loggedInUser') || null; }
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* === settings === */
+  const defaultSettings = { theme:'dark', chunkSize:1048576, sound:'on' };
+  function loadSettings(){ try{ return {...defaultSettings, ...(JSON.parse(localStorage.getItem('appSettings')||'{}'))}; }catch(e){return {...defaultSettings}; } }
+  function saveSettings(s){ localStorage.setItem('appSettings', JSON.stringify(s)); applySettings(s); }
+  function applySettings(s){
+    $('appRoot').setAttribute('data-theme', s.theme||'dark');
+    if($('themeSelect')) $('themeSelect').value = s.theme || 'dark';
+    if($('chunkSelect')) $('chunkSelect').value = s.chunkSize || defaultSettings.chunkSize;
+    if($('soundSelect')) $('soundSelect').value = s.sound || 'on';
+    soundEnabled = s.sound !== 'off';
+    updateSoundUI();
+  }
+  let settings = loadSettings();
+  applySettings(settings);
+
+  function setLoginBackground(show){ if(show) document.body.classList.add('login-gradient'); else document.body.classList.remove('login-gradient'); }
+
+  /* === sound & toasts === */
+  let audioCtx = null; let soundEnabled = settings.sound !== 'off';
+  function updateSoundUI(){ $('soundToggle').textContent = soundEnabled ? '🔔' : '🔕'; }
+  $('soundToggle').addEventListener('click', ()=>{ soundEnabled = !soundEnabled; settings.sound = soundEnabled ? 'on' : 'off'; saveSettings(settings); updateSoundUI(); });
+  updateSoundUI();
+
+  function playDing(){
+    if(!soundEnabled) return;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(880, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(620, ctx.currentTime + 0.16);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.9);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 1.0);
+      return;
+    }catch(e){
+      const fb = $('fallbackDing');
+      try{ if(fb){ fb.currentTime = 0; fb.play().catch(()=>{}); } }catch(e){}
+    }
+  }
+
+  const toasts = $('toasts');
+  function addToast(text, {playSound=true, timeout=5000} = {}){
+    const id = genId('toast');
+    const el = document.createElement('div'); el.className='toast'; el.id = id;
+    const txt = document.createElement('div'); txt.style.flex='1'; txt.textContent = text;
+    const closeBtn = document.createElement('button'); closeBtn.className='close-x'; closeBtn.innerHTML='×'; closeBtn.title='Dismiss';
+    closeBtn.addEventListener('click', ()=> removeToast(id));
+    el.appendChild(txt); el.appendChild(closeBtn);
+    toasts.appendChild(el);
+    if(playSound) playDing();
+    el._timeout = setTimeout(()=> removeToast(id), timeout);
+    return id;
+  }
+  function removeToast(id){
+    const el = document.getElementById(id); if(!el) return;
+    clearTimeout(el._timeout);
+    el.classList.add('toast-out');
+    setTimeout(()=> el.remove(), 620);
+  }
+
+  function showSpinner(text='Processing…'){ $('spinnerText').textContent = text; $('spinnerOverlay').style.display='flex'; }
+  function hideSpinner(){ $('spinnerOverlay').style.display='none'; }
+
+  /* === helpers === */
+  function findUserInsensitive(name){ if(!name) return null; const found = Object.keys(USERS).find(k=>k.toLowerCase()===name.toLowerCase()); return found || null; }
+  function normalizeRecipient(input){ if(!input) return null; if(input.trim().toLowerCase()==='public') return 'public'; const found = Object.keys(USERS).find(k => k.toLowerCase() === input.trim().toLowerCase()); return found || null; }
+
+  /* === show/hide login/app === */
+  function showLogin(){ $('loginPanel').style.display='flex'; $('appPanel').style.display='none'; setLoginBackground(true); $('welcomeLine').style.display='none'; }
+  function showApp(){ $('loginPanel').style.display='none'; $('appPanel').style.display='block'; setLoginBackground(false); $('welcomeLine').style.display='block'; $('welcomeName').textContent = currentUser() || ''; loadAll(); checkNewPrivateFiles(false); $('logoutBtn').style.display='inline-block'; }
+
+  /* === login binding (Edge-safe) === */
+  function handleLogin(){
+    const unameRaw = $('loginUsername').value.trim();
+    const pass = $('loginPassword').value.trim();
+    const found = findUserInsensitive(unameRaw);
+    if(found && USERS[found] === pass){
+      localStorage.setItem('loggedInUser', found);
+      localStorage.setItem('lastLogin', JSON.stringify({ user: found, time: Date.now() }));
+      addToast(`🍪 Welcome back, ${found}!`, {playSound:true, timeout:5000});
+      $('loginUsername').value=''; $('loginPassword').value='';
+      showApp();
+    } else {
+      addToast('❌ Invalid username or password', {playSound:true, timeout:3500});
+    }
+  }
+  $('loginBtn').addEventListener('click', handleLogin);
+  $('loginPassword').addEventListener('keypress', (e)=>{ if(e.key==='Enter') handleLogin(); });
+
+  if(currentUser()){ showApp(); } else { showLogin(); }
+
+  /* === logout === */
+  $('logoutBtn').addEventListener('click', ()=> {
+    const me = currentUser();
+    if(me){
+      localStorage.removeItem('loggedInUser');
+      localStorage.setItem('lastLogout', JSON.stringify({ user: me, time: Date.now() }));
+      addToast('👋 Logged out — see you soon!', {playSound:true, timeout:4000});
+    }
+    setTimeout(()=> location.reload(), 400);
+  });
+
+  /* === cross-tab notifications === */
+  window.addEventListener('storage', (e)=>{
+    try{
+      if(e.key === 'lastLogin' && e.newValue){
+        const obj = JSON.parse(e.newValue);
+        const me = currentUser();
+        if(me && obj.user !== me){ addToast(`🔔 ${obj.user} just logged in!`, {playSound:true, timeout:4000}); }
+      } else if(e.key === 'lastLogout' && e.newValue){
+        const obj = JSON.parse(e.newValue);
+        const me = currentUser();
+        if(me && obj.user !== me){ addToast(`👋 ${obj.user} has logged out!`, {playSound:true, timeout:3600}); }
+      } else if(e.key === 'files' && e.newValue){
+        checkNewPrivateFiles(false);
+      }
+    }catch(err){}
+  });
+
+  /* === tabs wiring (top bar) === */
+  function deactivateTabs(){ ['tabVideo','tabFiles','tabChat','tabMP3','tabMP4','tabGames'].forEach(id=>$(id).classList.remove('active')) }
+  function showPanel(name){
+    ['panelVideo','panelFiles','panelChat','panelMP3','panelMP4','panelGames'].forEach(id=>$(id).style.display='none');
+    $(name).style.display='block';
+    deactivateTabs();
+    const mapping = { panelVideo:'tabVideo', panelFiles:'tabFiles', panelChat:'tabChat', panelMP3:'tabMP3', panelMP4:'tabMP4', panelGames:'tabGames' };
+    const tabId = mapping[name];
+    if(tabId) $(tabId).classList.add('active');
+    if(name==='panelFiles') clearNewFileFlag();
+  }
+  ['tabVideo','tabFiles','tabChat','tabMP3','tabMP4','tabGames'].forEach(id=>$(id).addEventListener('click', ()=> showPanel('panel'+id.slice(3))));
+
+  /* === settings dropdown behavior === */
+  const settingsBtnEl = $('settingsBtn'), settingsDropdown = $('settingsDropdown'), settingsClose = $('settingsClose');
+  settingsBtnEl.addEventListener('click',(e)=>{ e.stopPropagation(); const open = settingsDropdown.style.display==='block'; settingsDropdown.style.display = open ? 'none' : 'block'; settingsDropdown.setAttribute('aria-hidden', open ? 'true' : 'false'); });
+  settingsClose?.addEventListener('click', ()=>{ settingsDropdown.style.display='none'; settingsDropdown.setAttribute('aria-hidden','true'); });
+  document.addEventListener('click',(e)=>{ if(settingsDropdown.style.display==='block' && !settingsDropdown.contains(e.target) && e.target !== settingsBtnEl){ settingsDropdown.style.display='none'; settingsDropdown.setAttribute('aria-hidden','true'); } });
+  $('themeSelect')?.addEventListener('change', (e)=>{ settings.theme = e.target.value; saveSettings(settings); });
+  $('chunkSelect')?.addEventListener('change', (e)=>{ settings.chunkSize = parseInt(e.target.value,10); saveSettings(settings); });
+  $('soundSelect')?.addEventListener('change', (e)=>{ settings.sound = e.target.value; saveSettings(settings); });
+
+  /* === chunked reader (simulated) === */
+  function getChunkSize(){ const s = loadSettings(); return parseInt(s.chunkSize || 1048576,10); }
+  function chunkedFileReader(file, { chunkSize = getChunkSize(), throttleMs = 10 } = {}){
+    let offset=0, stopped=false, cancelled=false; const total=file.size; const buffers=[]; let reader=null;
+    let onprogress=()=>{}, ondone=()=>{}, onerror=()=>{};
+    function read(){
+      if(cancelled) return; if(stopped) return;
+      if(offset >= total){
+        const blob = new Blob(buffers, { type: file.type || '' });
+        const r = new FileReader();
+        r.onload = ()=> ondone(r.result);
+        r.onerror = (e)=> onerror(e);
+        r.readAsDataURL(blob);
+        return;
+      }
+      const end = Math.min(offset + chunkSize, total);
+      const slice = file.slice(offset, end);
+      reader = new FileReader();
+      reader.onload = (e)=>{ buffers.push(e.target.result); offset = end; onprogress(offset, total); setTimeout(read, throttleMs); };
+      reader.onerror = (e)=> onerror(e);
+      reader.readAsArrayBuffer(slice);
+    }
+    return {
+      start(){ stopped=false; cancelled=false; read(); },
+      pause(){ stopped=true; },
+      resume(){ if(!cancelled){ stopped=false; read(); } },
+      cancel(){ cancelled=true; stopped=true; buffers.length=0; try{ if(reader && reader.readyState===1) reader.abort(); }catch(e){} },
+      onProgress(fn){ onprogress=fn; return this; },
+      onDone(fn){ ondone=fn; return this; },
+      onError(fn){ onerror=fn; return this; }
+    };
+  }
+
+  /* === upload controllers === */
+  const uploadControllers = { file:null, mp3:null, mp4:null };
+  function startChunkedUpload(kind){
+    const inputEl = kind==='file' ? $('fileInput') : (kind==='mp3' ? $('mp3Input') : $('mp4Input'));
+    const recipEl = kind==='file' ? $('fileRecipient') : (kind==='mp3' ? $('mp3Recipient') : $('mp4Recipient'));
+    const progressBar = kind==='file' ? $('fileProgress') : (kind==='mp3' ? $('mp3Progress') : $('mp4Progress'));
+    const percentEl = kind==='file' ? $('filePercent') : (kind==='mp3' ? $('mp3Percent') : $('mp4Percent'));
+    const pauseBtn = $(kind+'PauseBtn'), resumeBtn = $(kind+'ResumeBtn'), cancelBtn = $(kind+'CancelBtn'), uploadBtn = $(kind+'UploadBtn');
+    const f = inputEl?.files?.[0]; if(!f) return addToast('Select a file first.', {playSound:true, timeout:2000});
+    const recipRaw = recipEl?.value?.trim() || 'Public'; const recip = normalizeRecipient(recipRaw); if(!recip) return addToast('Recipient not found. Type "Public" or a username.', {playSound:true, timeout:2000});
+    if(uploadBtn) uploadBtn.disabled = true;
+    if(pauseBtn) pauseBtn.style.display='inline-block';
+    if(resumeBtn) resumeBtn.style.display='none';
+    if(cancelBtn) cancelBtn.style.display='inline-block';
+    if(progressBar) progressBar.style.width='0%';
+    if(percentEl) percentEl.textContent='0%';
+    const toastId = addToast(`⏳ Uploading ${f.name} — 0%`, {playSound:true, timeout:120000});
+    showSpinner(`Reading ${f.name} — 0%`);
+    const controller = chunkedFileReader(f, { chunkSize:getChunkSize(), throttleMs:8 })
+      .onProgress((loaded,total)=> {
+        const p = Math.floor((loaded/total)*100);
+        if(progressBar) progressBar.style.width = p + '%';
+        if(percentEl) percentEl.textContent = p + '%';
+        try{ document.getElementById(toastId).firstChild.textContent = `⏳ Uploading ${f.name} — ${p}%`; }catch(e){}
+        $('spinnerText').textContent = `Reading ${f.name} — ${p}%`;
+      })
+      .onDone((dataUrl)=>{
+        hideSpinner(); removeToast(toastId); addToast(`✅ ${f.name} uploaded`, {playSound:true, timeout:4000});
+        const storeKey = kind==='file' ? 'files' : (kind==='mp3' ? 'mp3s' : 'mp4s');
+        const arr = JSON.parse(localStorage.getItem(storeKey) || '[]');
+        const obj = { id: genId(kind), user: currentUser()||'Guest', recipient: recip, name: f.name, data: dataUrl, time: Date.now() };
+        arr.push(obj);
+        localStorage.setItem(storeKey, JSON.stringify(arr));
+        if(uploadBtn) uploadBtn.disabled=false;
+        if(pauseBtn) pauseBtn.style.display='none';
+        if(resumeBtn) resumeBtn.style.display='none';
+        if(cancelBtn) cancelBtn.style.display='none';
+        if(progressBar) progressBar.style.width='0%';
+        if(percentEl) percentEl.textContent='';
+        if(inputEl) inputEl.value='';
+        if(recipEl) recipEl.value='';
+        loadFiles(); loadMP3s(); loadMP4s();
+        if(recip !== 'public'){ localStorage.setItem('unseen_'+recip,'1'); localStorage.setItem('files', JSON.stringify(JSON.parse(localStorage.getItem('files')||'[]'))); }
+        uploadControllers[kind] = null;
+      })
+      .onError((err)=>{ hideSpinner(); removeToast(toastId); addToast('Read error: '+(err && err.message ? err.message : err), {playSound:false, timeout:3000}); if(uploadBtn) uploadBtn.disabled=false; if(pauseBtn) pauseBtn.style.display='none'; if(resumeBtn) resumeBtn.style.display='none'; if(cancelBtn) cancelBtn.style.display='none'; if(progressBar) progressBar.style.width='0%'; if(percentEl) percentEl.textContent=''; uploadControllers[kind]=null; });
+    uploadControllers[kind] = controller;
+    controller.start();
+  }
+
+  function controlFileUploads(action, kind){
+    const controller = uploadControllers[kind];
+    const pauseBtn = $(kind+'PauseBtn'), resumeBtn = $(kind+'ResumeBtn'), cancelBtn = $(kind+'CancelBtn'), uploadBtn = $(kind+'UploadBtn');
+    if(!controller) return;
+    if(action==='pause'){ controller.pause(); if(pauseBtn) pauseBtn.style.display='none'; if(resumeBtn) resumeBtn.style.display='inline-block'; $('spinnerText').textContent='Paused'; addToast('Upload paused',{playSound:false,timeout:1500}); }
+    else if(action==='resume'){ controller.resume(); if(pauseBtn) pauseBtn.style.display='inline-block'; if(resumeBtn) resumeBtn.style.display='none'; $('spinnerText').textContent='Resuming…'; addToast('Resuming upload',{playSound:false,timeout:1200}); }
+    else if(action==='cancel'){ controller.cancel(); if(uploadBtn) uploadBtn.disabled=false; if(pauseBtn) pauseBtn.style.display='none'; if(resumeBtn) resumeBtn.style.display='none'; if(cancelBtn) cancelBtn.style.display='none'; const pb = kind==='file' ? $('fileProgress') : (kind==='mp3' ? $('mp3Progress') : $('mp4Progress')); if(pb) pb.style.width='0%'; const pe = kind==='file' ? $('filePercent') : (kind==='mp3' ? $('mp3Percent') : $('mp4Percent')); if(pe) pe.textContent=''; hideSpinner(); uploadControllers[kind] = null; addToast('Upload canceled',{playSound:false,timeout:1400}); }
+  }
+
+  /* === wire upload buttons === */
+  $('fileUploadBtn')?.addEventListener('click', ()=> startChunkedUpload('file'));
+  $('filePauseBtn')?.addEventListener('click', ()=> controlFileUploads('pause','file'));
+  $('fileResumeBtn')?.addEventListener('click', ()=> controlFileUploads('resume','file'));
+  $('fileCancelBtn')?.addEventListener('click', ()=> controlFileUploads('cancel','file'));
+
+  $('mp3UploadBtn')?.addEventListener('click', ()=> startChunkedUpload('mp3'));
+  $('mp3PauseBtn')?.addEventListener('click', ()=> controlFileUploads('pause','mp3'));
+  $('mp3ResumeBtn')?.addEventListener('click', ()=> controlFileUploads('resume','mp3'));
+  $('mp3CancelBtn')?.addEventListener('click', ()=> controlFileUploads('cancel','mp3'));
+
+  $('mp4UploadBtn')?.addEventListener('click', ()=> startChunkedUpload('mp4'));
+  $('mp4PauseBtn')?.addEventListener('click', ()=> controlFileUploads('pause','mp4'));
+  $('mp4ResumeBtn')?.addEventListener('click', ()=> controlFileUploads('resume','mp4'));
+  $('mp4CancelBtn')?.addEventListener('click', ()=> controlFileUploads('cancel','mp4'));
+
+  /* === lists & loaders === */
+  function loadFiles(){ const arr=JSON.parse(localStorage.getItem('files')||'[]'); const me=currentUser(); const container=$('fileList'); container.innerHTML=''; arr.forEach((f, idx)=>{ if(f.recipient==='public' || f.recipient===me || f.user===me || me==='Admin'){ const el=document.createElement('div'); el.className='fileItem'; const meta=document.createElement('div'); meta.innerHTML=`<strong style="color:var(--text)">${escapeHtml(f.name)}</strong><div style="color:var(--muted);font-size:12px">by ${escapeHtml(f.user)}${f.recipient!=='public'?' → '+escapeHtml(f.recipient):''}</div>`; el.appendChild(meta); const actions=document.createElement('div'); actions.style.display='flex'; actions.style.justifyContent='space-between'; actions.style.alignItems='center'; const a=document.createElement('a'); a.href=f.data; a.download=f.name; a.textContent='⬇️ Download'; a.style.color='var(--success)'; a.style.fontWeight='700'; actions.appendChild(a); if(me==='Admin' || f.user===me){ const del=document.createElement('button'); del.className='del-btn'; del.innerHTML='🗑️'; del.title='Delete file'; del.addEventListener('click', ()=>{ if(!confirm('Delete file?')) return; arr.splice(idx,1); localStorage.setItem('files', JSON.stringify(arr)); loadFiles(); }); actions.appendChild(del); } el.appendChild(actions); container.appendChild(el); } }); }
+
+  function loadChat(){ const box=$('chatBox'); box.innerHTML=''; const msgs=JSON.parse(localStorage.getItem('chat')||'[]'); const me=currentUser(); msgs.forEach((m,i)=>{ const div=document.createElement('div'); div.className='msg'; const left=document.createElement('div'); left.innerHTML=`<strong style="color:var(--text)">${escapeHtml(m.user)}</strong>: ${escapeHtml(m.text)}`; div.appendChild(left); if(me==='Admin' || m.user===me){ const del=document.createElement('button'); del.className='del-btn'; del.textContent='🗑️'; del.addEventListener('click', ()=>{ if(!confirm('Delete message?')) return; msgs.splice(i,1); localStorage.setItem('chat',JSON.stringify(msgs)); loadChat(); }); div.appendChild(del); } box.appendChild(div); }); }
+
+  $('chatSendBtn')?.addEventListener('click', ()=> { const t=$('chatInput').value.trim(); if(!t) return; const msgs=JSON.parse(localStorage.getItem('chat')||'[]'); msgs.push({ user: currentUser()||'Guest', text:t, time:Date.now() }); localStorage.setItem('chat', JSON.stringify(msgs)); $('chatInput').value=''; loadChat(); addToast('Message sent', {playSound:false, timeout:1400}); });
+
+  /* === video recorder === */
+  let mediaRec=null, mediaStream=null, recChunks=[];
+  $('startRec')?.addEventListener('click', async ()=> { try{ mediaStream = await navigator.mediaDevices.getUserMedia({ video:true,audio:true }); $('preview').srcObject = mediaStream; recChunks=[]; mediaRec = new MediaRecorder(mediaStream); mediaRec.ondataavailable = e=>{ if(e.data && e.data.size) recChunks.push(e.data); }; mediaRec.start(); $('startRec').disabled=true; $('stopRec').disabled=false; $('postRec').disabled=true; }catch(e){ addToast('Camera/mic error: '+(e.message||e), {playSound:false, timeout:4000}); } });
+  $('stopRec')?.addEventListener('click', ()=> { if(!mediaRec) return; mediaRec.stop(); if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); $('preview').srcObject=null; } $('startRec').disabled=false; $('stopRec').disabled=true; $('postRec').disabled=false; });
+  $('postRec')?.addEventListener('click', ()=> { if(!recChunks.length) return addToast('Nothing recorded',{playSound:false,timeout:1800}); const blob=new Blob(recChunks,{type:'video/webm'}); const url=URL.createObjectURL(blob); const vids=JSON.parse(localStorage.getItem('videos')||'[]'); vids.push({ id:genId('vid'), user: currentUser()||'Guest', video:url, time:new Date().toLocaleString() }); localStorage.setItem('videos', JSON.stringify(vids)); recChunks=[]; mediaRec=null; loadVideos(); addToast('🎥 Video posted', {playSound:true, timeout:3000}); $('postRec').disabled=true; });
+  function loadVideos(){ const g=$('videoGallery'); g.innerHTML=''; const arr=JSON.parse(localStorage.getItem('videos')||'[]'); const me=currentUser(); arr.forEach((v,idx)=>{ const node=document.createElement('div'); node.className='videoItem'; const vid=document.createElement('video'); vid.src=v.video; vid.controls=true; node.appendChild(vid); const meta=document.createElement('div'); meta.style.color='var(--muted)'; meta.style.fontSize='13px'; meta.textContent=`${v.user} • ${v.time}`; node.appendChild(meta); if(me==='Admin' || me===v.user){ const del=document.createElement('button'); del.className='del-btn'; del.textContent='🗑️'; del.addEventListener('click', ()=>{ if(!confirm('Delete this video?')) return; arr.splice(idx,1); localStorage.setItem('videos',JSON.stringify(arr)); loadVideos(); }); node.appendChild(del); } g.appendChild(node); }); }
+
+  /* === mp3/mp4 lists === */
+  function loadMP3s(){ const arr=JSON.parse(localStorage.getItem('mp3s')||'[]'); const me=currentUser(); const list=$('mp3List'); if(!list) return; list.innerHTML=''; arr.forEach((it,idx)=>{ if(it.recipient==='public' || it.recipient===me || it.user===me || me==='Admin'){ const node=document.createElement('div'); node.className='audioItem'; const title=document.createElement('div'); title.innerHTML=`<strong>${escapeHtml(it.name)}</strong><div style="color:var(--muted);font-size:12px">by ${escapeHtml(it.user)}${it.recipient!=='public'?' → '+escapeHtml(it.recipient):''}</div>`; node.appendChild(title); const audio=document.createElement('audio'); audio.controls=true; audio.src=it.data; node.appendChild(audio); const actions=document.createElement('div'); actions.style.display='flex'; actions.style.justifyContent='space-between'; actions.style.alignItems='center'; const dl=document.createElement('a'); dl.href=it.data; dl.download=it.name; dl.textContent='⬇️ Download'; dl.style.color='var(--success)'; actions.appendChild(dl); if(me==='Admin' || it.user===me){ const del=document.createElement('button'); del.className='del-btn'; del.textContent='🗑️'; del.addEventListener('click', ()=>{ if(!confirm('Delete MP3?')) return; arr.splice(idx,1); localStorage.setItem('mp3s',JSON.stringify(arr)); loadMP3s(); }); actions.appendChild(del); } node.appendChild(actions); list.appendChild(node); } }); }
+  function loadMP4s(){ const arr=JSON.parse(localStorage.getItem('mp4s')||'[]'); const me=currentUser(); const list=$('mp4List'); if(!list) return; list.innerHTML=''; arr.forEach((it,idx)=>{ if(it.recipient==='public' || it.recipient===me || it.user===me || me==='Admin'){ const node=document.createElement('div'); node.className='mp4Item'; const title=document.createElement('div'); title.innerHTML=`<strong>${escapeHtml(it.name)}</strong><div style="color:var(--muted);font-size:12px">by ${escapeHtml(it.user)}${it.recipient!=='public'?' → '+escapeHtml(it.recipient):''}</div>`; node.appendChild(title); const vid=document.createElement('video'); vid.controls=true; vid.src=it.data; node.appendChild(vid); const actions=document.createElement('div'); actions.style.display='flex'; actions.style.justifyContent='space-between'; actions.style.alignItems='center'; const dl=document.createElement('a'); dl.href=it.data; dl.download=it.name; dl.textContent='⬇️ Download'; dl.style.color='var(--success)'; actions.appendChild(dl); if(me==='Admin' || it.user===me){ const del=document.createElement('button'); del.className='del-btn'; del.textContent='🗑️'; del.addEventListener('click', ()=>{ if(!confirm('Delete MP4?')) return; arr.splice(idx,1); localStorage.setItem('mp4s',JSON.stringify(arr)); loadMP4s(); }); actions.appendChild(del); } node.appendChild(actions); list.appendChild(node); } }); }
+
+  /* === private file notification === */
+  function checkNewPrivateFiles(clearOnView=false){
+    const me = currentUser(); if(!me) return;
+    const files = JSON.parse(localStorage.getItem('files')||'[]'); const last = parseInt(localStorage.getItem('lastFileCheck_'+me)||'0',10) || 0; let newest = last;
+    files.forEach(f => { if(f.recipient===me && f.time > last){ addToast(`📨 New private file from ${f.user} — ${f.name}`, {playSound:true, timeout:5000}); newest = Math.max(newest, f.time); } });
+    if(clearOnView) newest = Date.now();
+    localStorage.setItem('lastFileCheck_'+me, newest);
+  }
+
+  /* === misc helpers === */
+  function loadAll(){ loadFiles(); loadChat(); loadVideos(); loadMP3s(); loadMP4s(); updateUIForLogin(); }
+  function updateUIForLogin(){ if(currentUser()){ $('logoutBtn').style.display='inline-block'; $('welcomeLine').style.display='block'; $('welcomeName').textContent = currentUser(); } else { $('logoutBtn').style.display='none'; $('welcomeLine').style.display='none'; } }
+  if(currentUser()){ loadAll(); checkNewPrivateFiles(false); }
+
+  $('gamesTestBtn')?.addEventListener('click', ()=> addToast('Games coming soon — demo', {playSound:false, timeout:1800}));
+
+  /* persist default settings if missing */
+  if(!localStorage.getItem('appSettings')) saveSettings(settings);
+
+}); // DOMContentLoaded end
+
+<script>
+/* ========== GLOBAL UTILITIES ========== */
+const $ = sel => document.querySelector(sel);
+const showToast = (msg,dur=5000)=>{
+  const c=$("#toastContainer");
+  const t=document.createElement("div");
+  t.className="toast";
+  t.innerHTML=`${msg}<button onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(()=>t.classList.add("show"),10);
+  const remove=()=>{t.classList.remove("show");setTimeout(()=>t.remove(),500);}
+  setTimeout(remove,dur);
+};
+
+/* ========== LOGIN LOGIC ========== */
+const users = {
+  "Admin":"COOKIEPREFERENCES",
+  "User1":"YUMYUM",
+  "Guest":"VISITOR"
+};
+
+$("#loginBtn").onclick=()=>{
+  const u=$("#username").value.trim();
+  const p=$("#password").value.trim();
+  if(users[u] && users[u]===p){
+    localStorage.setItem("loggedUser",u);
+    $("#loginPage").style.display="none";
+    $("#mainPage").style.display="block";
+    $("#welcomeUser").textContent=`Welcome ${u}!`;
+    showToast(`🍪 Welcome back, ${u}!`);
+    // load settings
+    loadSettings();
+  } else {
+    $("#loginMsg").textContent="Invalid credentials!";
+  }
+};
+
+window.addEventListener("load",()=>{
+  const u=localStorage.getItem("loggedUser");
+  if(u){
+    $("#loginPage").style.display="none";
+    $("#mainPage").style.display="block";
+    $("#welcomeUser").textContent=`Welcome ${u}!`;
+    loadSettings();
+  }
+});
+
+/* ========== LOGOUT ========== */
+$("#logoutBtn").onclick=()=>{
+  const u=localStorage.getItem("loggedUser");
+  localStorage.removeItem("loggedUser");
+  $("#mainPage").style.display="none";
+  $("#loginPage").style.display="flex";
+  $("#username").value="";
+  $("#password").value="";
+  showToast(`👋 ${u} logged out.`);
+};
+
+/* ========== TAB SWITCHING ========== */
+const sections=["video","file","chat","game","mp3","mp4"];
+sections.forEach(name=>{
+  $("#"+name+"Tab").onclick=()=>{
+    sections.forEach(n=>{
+      $("#"+n+"Section").style.display="none";
+      $("#"+n+"Tab").classList.remove("active-tab");
+    });
+    $("#"+name+"Section").style.display="block";
+    $("#"+name+"Tab").classList.add("active-tab");
+  };
+});
+
+/* ========== SETTINGS DROPDOWN ========== */
+const menu=$("#settingsMenu");
+$("#settingsBtn").onclick=(e)=>{
+  e.stopPropagation();
+  menu.style.display=menu.style.display==="flex"?"none":"flex";
+};
+document.body.addEventListener("click",(e)=>{
+  if(!menu.contains(e.target) && e.target!==$("#settingsBtn"))
+    menu.style.display="none";
+});
+
+const saveSettings=()=>{
+  const s={
+    theme:$("#themeSelect").value,
+    sound:$("#soundToggle").checked,
+    chunk:$("#chunkSize").value
+  };
+  localStorage.setItem("cookieSettings",JSON.stringify(s));
+  applyTheme(s.theme);
+  showToast("⚙️ Settings saved!");
+};
+
+const loadSettings=()=>{
+  const s=JSON.parse(localStorage.getItem("cookieSettings")||"{}");
+  if(s.theme){$("#themeSelect").value=s.theme;applyTheme(s.theme);}
+  if(s.sound!==undefined)$("#soundToggle").checked=s.sound;
+  if(s.chunk)$("#chunkSize").value=s.chunk;
+};
+$("#themeSelect").onchange=saveSettings;
+$("#soundToggle").onchange=saveSettings;
+$("#chunkSize").onchange=saveSettings;
+
+function applyTheme(mode){
+  if(mode==="light"){
+    document.documentElement.style.setProperty("--bg","#fff");
+    document.documentElement.style.setProperty("--fg","#000");
+    document.documentElement.style.setProperty("--card","#ddd");
+    document.documentElement.style.setProperty("--toast-bg","#eee");
+    document.documentElement.style.setProperty("--toast-text","#000");
+  }else{
+    document.documentElement.style.setProperty("--bg","#000");
+    document.documentElement.style.setProperty("--fg","#ffcc00");
+    document.documentElement.style.setProperty("--card","#111");
+    document.documentElement.style.setProperty("--toast-bg","#222");
+    document.documentElement.style.setProperty("--toast-text","#ffcc00");
+  }
+}
+
+/* ========== CHAT ========== */
+$("#sendBtn").onclick=()=>{
+  const txt=$("#chatInput").value.trim();
+  if(!txt)return;
+  const u=localStorage.getItem("loggedUser");
+  const msg=document.createElement("div");
+  msg.textContent=`${u}: ${txt}`;
+  $("#chatBox").appendChild(msg);
+  $("#chatInput").value="";
+  $("#chatBox").scrollTop=$("#chatBox").scrollHeight;
+};
+
+/* ========== FILE UPLOAD SIMULATION ========== */
+$("#uploadBtn").onclick=()=>{
+  const f=$("#fileInput").files[0];
+  if(!f){showToast("No file selected!");return;}
+  const d=document.createElement("div");
+  d.textContent=`📁 ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
+  $("#fileList").appendChild(d);
+  showToast(`Uploaded ${f.name}`);
+};
+
+/* ========== MP3 & MP4 UPLOADS ========== */
+const makeUploader=(inputId,btnId,listId,label)=>{
+  $(btnId).onclick=()=>{
+    const f=$(inputId).files[0];
+    if(!f){showToast("No file selected!");return;}
+    const d=document.createElement("div");
+    d.textContent=`${label} ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
+    $(listId).appendChild(d);
+    showToast(`Uploaded ${f.name}`);
+  };
+};
+makeUploader("#mp3Input","#mp3UploadBtn","#mp3List","🎵");
+makeUploader("#mp4Input","#mp4UploadBtn","#mp4List","🎬");
+
+/* ========== VIDEO RECORD SIMULATION ========== */
+let mediaRecorder,chunks=[];
+$("#startBtn").onclick=async()=>{
+  const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+  $("#preview").srcObject=stream;
+  mediaRecorder=new MediaRecorder(stream);
+  mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+  mediaRecorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:"video/webm"});
+    const url=URL.createObjectURL(blob);
+    const v=document.createElement("video");
+    v.src=url;
+    v.controls=true;
+    v.className="videoItem";
+    $("#videoGallery").appendChild(v);
+    chunks=[];
+  };
+  mediaRecorder.start();
+  $("#startBtn").disabled=true;
+  $("#stopBtn").disabled=false;
+};
+$("#stopBtn").onclick=()=>{
+  mediaRecorder.stop();
+  $("#preview").srcObject.getTracks().forEach(t=>t.stop());
+  $("#startBtn").disabled=false;
+  $("#stopBtn").disabled=true;
+};
+$("#postBtn").onclick=()=>showToast("Posted video!");
+
+</script>
+</body>
+</html>
+
